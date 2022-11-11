@@ -17,9 +17,10 @@ def index():
 	return "<h1>Data Movie Backend API</h1>"
 
 @app.route('/get_movie_list/<time>', methods=['GET'])
-def get_list_provinsi(time):
+def get_movie_list(time):
 # Akses API The Movie Database
 	try:
+		url = ""
 		payload={}
 		headers = {}
 		app_key = "aef829310f8af509d6ebabe33b18f3e9"
