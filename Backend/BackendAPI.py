@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, make_response
-import pymysql, requests
+import pymysql, requests, hashlib
 
 # Membuat server flask
 app = Flask(__name__)
@@ -16,6 +16,7 @@ mydb = pymysql.connect(
 def index():
 	return "<h1>Data Movie Backend API</h1>"
 
+### EXTERNAL API ###
 @app.route('/get_trend_movie_list/<time>', methods=['GET'])
 def get_trend_movie_list(time):
 	try:
@@ -72,5 +73,35 @@ def get_popular_movie_list(page):
 		}
 		return make_response(jsonify(response_json), 200)
 
+
+### USER API ###
+@app.route('/register_user', methods=['POST'])
+def register_user():
+	hasil = {"status": "gagal register data user"}
+
+	try:
+		data = request.json
+		username = data["username"]
+		password = data["password"]
+
+		username = username.lower()
+		password_enc = hashlib.md5(password.encode('utf-8')).hexdigest() # Convert password to md5
+
+		query = "INSERT INTO user_list (username, password, user_type) VALUES(%s,%s,%s)"
+		values = (username, password_enc, "MEMBER",)
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		mydb.commit()
+		hasil = {"status": "berhasil register data user"}
+
+	except Exception as e:
+		print("Error: " + str(e))
+
+	return jsonify(hasil)
+
+### RATING API ###
+
+
+### MAIN ###
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=5010, debug=True)
