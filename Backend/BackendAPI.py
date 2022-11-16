@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, render_template
 from flask_jwt_extended import create_access_token, get_jwt, jwt_required, JWTManager
+from flask_cors import CORS
 import pymysql
 import datetime
 import hashlib
@@ -7,6 +8,7 @@ import requests
 
 # Membuat server flask dan API KEY TMDB
 app = Flask(__name__)
+CORS(app)
 app_key = "aef829310f8af509d6ebabe33b18f3e9"
 
 # Flask JWT Extended Configuration
@@ -25,7 +27,7 @@ mydb = pymysql.connect(
 @app.route('/')
 @app.route('/index')
 def index():
-	return "<h1>Data Movie Backend API</h1>"
+	return render_template('index.html')
 
 ### EXTERNAL API ###
 @app.route('/get_trend_movie_list/<time>', methods=['GET'])
