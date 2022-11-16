@@ -21,7 +21,7 @@ USE `db_movie_rating`;
 DROP TABLE IF EXISTS `rating_list`;
 
 CREATE TABLE `rating_list` (
-  `movie_id` int(11) NOT NULL,
+  `movie_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `rating` enum('1','2','3','4','5') NOT NULL,
   `comment` text NOT NULL,
@@ -38,6 +38,8 @@ DROP TABLE IF EXISTS `user_list`;
 
 CREATE TABLE `user_list` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) DEFAULT NULL,
+  `nickname` varchar(255) DEFAULT NULL,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `user_type` enum('ADMIN','MEMBER') NOT NULL,

@@ -48,8 +48,9 @@ def get_trend_movie_list(time):
 			raise Exception("Status Code is not 200")
 
 		response_json = response.json()
+		movie_data = response_json["results"]
 
-		return make_response(jsonify(response_json), 200)
+		return make_response(jsonify(movie_data), 200)
 	
 	except Exception as e:
 		response_json = {
@@ -74,8 +75,9 @@ def get_popular_movie_list(page):
 			raise Exception("Status Code is not 200")
 
 		response_json = response.json()
+		movie_data = response_json["results"]
 
-		return make_response(jsonify(response_json), 200)
+		return make_response(jsonify(movie_data), 200)
 	
 	except Exception as e:
 		response_json = {
@@ -92,6 +94,8 @@ def register_user():
 
 	try:
 		data = request.json
+		email = data["email"]
+		nickname = data["nickname"]
 		username = data["username"]
 		password = data["password"]
 
@@ -115,8 +119,8 @@ def register_user():
 			return jsonify(hasil)
 
 		# Register data baru
-		query = "INSERT INTO user_list (username, password, user_type) VALUES(%s,%s,%s)"
-		values = (username, password_enc, "MEMBER",)
+		query = "INSERT INTO user_list (email, nickname, username, password, user_type) VALUES(%s,%s,%s,%s,%s)"
+		values = (email, nickname, username, password_enc, "MEMBER",)
 		mycursor = mydb.cursor()
 		mycursor.execute(query, values)
 		mydb.commit()
@@ -163,8 +167,8 @@ def login():
 			return jsonify(hasil)
 
 		jwt_payload = {
-			"id_user" : user_id,
-			"role" : user_type
+			"user_id" : user_id,
+			"user_type" : user_type
 		}
 
 		access_token = create_access_token(username, additional_claims=jwt_payload)
@@ -174,9 +178,51 @@ def login():
 
 	return jsonify(access_token=access_token)
 
+@app.route("/user_data", methods=["GET"])
+@jwt_required()
+def user_data():
+	user_id = str(get_jwt()["user_id"])
+	query = "SELECT * FROM user_list WHERE user_id = %s"
+	values = (user_id,)
+
+	mycursor = mydb.cursor()
+	mycursor.execute(query, values)
+	row_headers = [x[0] for x in mycursor.description]
+	data = mycursor.fetchall()
+	json_data = []
+	for result in data:
+		json_data.append(dict(zip(row_headers, result)))
+	return make_response(jsonify(json_data),200)
 
 
 ### RATING API ###
+@app.route('/insert_review', methods=['POST'])
+@jwt_required()
+def insert_review():
+	hasil = {"status": "gagal insert data siswa"}
+
+	user_id = str(get_jwt()["user_id"])
+
+	try:
+		data = request.json
+		create_time = datetime.datetime.now()
+		update_time = create_time
+
+		query = "INSERT INTO rating_list(user_id, rating, comment, created_at, updated_at) VALUES(%s,%s,%s,%s,%s)"
+		values = (user_id, data["rating"], data["comment"], create_time, update_time, )
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		mydb.commit()
+		hasil = {"Status": "Review inserted successfuly!"}
+
+	except Exception as e:
+		print("Error: " + str(e))
+		hasil = {
+			"Status": "Insert failed!",
+			"Error" : str(e)
+		}
+
+	return jsonify(hasil)
 
 
 ### MAIN ###
