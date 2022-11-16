@@ -5,11 +5,13 @@ import pymysql
 import datetime
 import hashlib
 import requests
+import re
 
 # Membuat server flask dan API KEY TMDB
 app = Flask(__name__)
 CORS(app)
 app_key = "aef829310f8af509d6ebabe33b18f3e9"
+regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
 # Flask JWT Extended Configuration
 app.config['SECRET_KEY'] 					= "INI_SECRET_KEY"
@@ -99,12 +101,30 @@ def register_user():
 		username = data["username"]
 		password = data["password"]
 
-		if len(password) < 8:
-			hasil = {"Status": "Your password needs to be atleast 8 character!"}
+		# Cek syarat data
+		if (not re.fullmatch(regex, email)):
+			hasil = {"Status": "Enter your email correctly!"}
 			return jsonify(hasil)
 
-		username = username.lower()
-		password_enc = hashlib.md5(password.encode('utf-8')).hexdigest()
+		if len(username) < 8:
+			hasil = {"Status": "Your username needs to be atleast 8 character!"}
+			return jsonify(hasil)
+
+		if len(password) < 8:
+			hasil = {"Status": "Your password needs to be atleast 8 character!"}
+			return jsonify(hasil)	
+
+		# Cek apakah email ada didalam database
+		query = " SELECT email FROM user_list WHERE email = %s "
+		values = (email, )
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		data_user = mycursor.fetchall()
+
+		if len(data_user) > 0:
+			hasil = {"Status": "The email that you enter already exsisted!"}
+			return jsonify(hasil)
 
 		# Cek apakah username ada didalam database
 		query = " SELECT username FROM user_list WHERE username = %s "
@@ -117,6 +137,22 @@ def register_user():
 		if len(data_user) > 0:
 			hasil = {"Status": "The username that you enter already exsisted!"}
 			return jsonify(hasil)
+
+		# Cek apakah nickname ada didalam database
+		query = " SELECT DISTINCT nickname FROM user_list WHERE UPPER(nickname) LIKE UPPER(%s)"
+		values = (nickname, )
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		data_user = mycursor.fetchall()
+
+		if len(data_user) > 0:
+			hasil = {"Status": "The nickname that you enter already exsisted!"}
+			return jsonify(hasil)
+
+		# Password encoder
+		username = username.lower()
+		password_enc = hashlib.md5(password.encode('utf-8')).hexdigest()
 
 		# Register data baru
 		query = "INSERT INTO user_list (email, nickname, username, password, user_type) VALUES(%s,%s,%s,%s,%s)"
@@ -182,7 +218,7 @@ def login():
 @jwt_required()
 def user_data():
 	user_id = str(get_jwt()["user_id"])
-	query = "SELECT * FROM user_list WHERE user_id = %s"
+	query = "SELECT user_id, email, nickname, username, user_type FROM user_list WHERE user_id = %s"
 	values = (user_id,)
 
 	mycursor = mydb.cursor()
@@ -193,6 +229,86 @@ def user_data():
 	for result in data:
 		json_data.append(dict(zip(row_headers, result)))
 	return make_response(jsonify(json_data),200)
+
+@app.route("/update_user_data", methods=["PUT"])
+@jwt_required()
+def update_user_data():
+	hasil = {"Status": "Update failed!"}
+
+	try:
+		data = request.json
+		user_id = str(get_jwt()["user_id"])
+
+		query = "UPDATE user_list SET user_id = %s "
+		values = (user_id, )
+
+		if "password" in data:
+			# Password encoder
+			password = data["password"]
+			
+			if len(password) < 8:
+				hasil = {"Status": "Your password needs to be atleast 8 character!"}
+				return jsonify(hasil)	
+			
+			password_enc = hashlib.md5(password.encode('utf-8')).hexdigest()
+			query += ", password = %s"
+			values += (password_enc, )
+			hasil.update({"Password" : "Changed"})
+
+		if "nickname" in data:
+			nickname = data["nickname"]
+
+			# Cek apakah nickname ada didalam database
+			query = " SELECT DISTINCT nickname FROM user_list WHERE UPPER(nickname) LIKE UPPER(%s)"
+			values = (nickname, )
+
+			mycursor = mydb.cursor()
+			mycursor.execute(query, values)
+			data_user = mycursor.fetchall()
+
+			if len(data_user) > 0:
+				hasil = {"Status": "The nickname that you enter already exsisted!"}
+				return jsonify(hasil)
+
+			query += ", nickname = %s"
+			values += (nickname, )
+			hasil.update({"Nickname" : "Changed to {}".format(nickname)})
+
+		if "username" in data:
+			username = data["username"].lower()
+			
+			if len(username) < 8:
+				hasil = {"Status": "Your username needs to be atleast 8 character!"}
+				return jsonify(hasil)
+
+			# Cek apakah username ada didalam database
+			query = " SELECT username FROM user_list WHERE username = %s "
+			values = (username, )
+
+			mycursor = mydb.cursor()
+			mycursor.execute(query, values)
+			data_user = mycursor.fetchall()
+
+			if len(data_user) > 0:
+				hasil = {"Status": "The username that you enter already exsisted!"}
+				return jsonify(hasil)
+
+			query += ", username = %s"
+			values += (username, )
+			hasil.update({"Username" : "Changed to {}".format(username)})
+
+		query += " WHERE user_id = %s"
+		values += (user_id, )
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		mydb.commit()
+		hasil.update({"Status" : "Update sucessful!"})
+
+	except Exception as e:
+		print("Error: " + str(e))
+
+	return jsonify(hasil)
 
 
 ### RATING API ###
@@ -213,7 +329,7 @@ def insert_review():
 		mycursor = mydb.cursor()
 		mycursor.execute(query, values)
 		mydb.commit()
-		hasil = {"Status": "Review inserted successfuly!"}
+		hasil = {"Status": "Review inserted successfully!"}
 
 	except Exception as e:
 		print("Error: " + str(e))
