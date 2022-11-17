@@ -16,6 +16,7 @@
         .then((response) => response.json())
         .then(data=> {
           data.forEach(post => {
+            listEl.insertAdjacentHTML('beforeend', `<li><img src="https://www.themoviedb.org/t/p/w220_and_h330_face/${post.backdrop_path}"><li>`);
             listEl.insertAdjacentHTML('beforeend', `<li>${post.original_title}<li>`);
           });
         });
