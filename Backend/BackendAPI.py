@@ -312,24 +312,74 @@ def update_user_data():
 
 
 ### RATING API ###
+@app.route('/get_review_list', methods=['GET'])
+def review_list():
+	movie_id = request.args.get("movie_id_number")
+	
+	if movie_id:
+		query = "SELECT * FROM review_list WHERE movie_id = %s"
+		values = (movie_id,)
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		row_headers = [x[0] for x in mycursor.description]
+		data = mycursor.fetchall()
+		json_data = []
+		for result in data:
+			json_data.append(dict(zip(row_headers, result)))
+		return make_response(jsonify(json_data),200)
+	else:
+		hasil = {"Status": "No Movie ID entered!"}
+		return jsonify(hasil)
+
+@app.route('/get_user_review_list', methods=['GET'])
+@jwt_required()
+def user_review_list():
+	hasil = {"Status": "Fetching data failed!"}
+
+	try:
+		user_id = str(get_jwt()["user_id"])
+		query = "SELECT * FROM review_list WHERE user_id = %s"
+		values = (user_id,)
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		row_headers = [x[0] for x in mycursor.description]
+		data = mycursor.fetchall()
+		json_data = []
+		for result in data:
+			json_data.append(dict(zip(row_headers, result)))
+		return make_response(jsonify(json_data), 200)
+
+	except Exception as e:
+		print("Error: " + str(e))
+		hasil = {
+			"Status": "Fetching data failed!",
+			"Error" : str(e)
+		}
+
+	return jsonify(hasil)
+
 @app.route('/insert_review', methods=['POST'])
 @jwt_required()
 def insert_review():
-	hasil = {"status": "gagal insert data siswa"}
-
-	user_id = str(get_jwt()["user_id"])
+	hasil = {"Status": "Insert failed!"}
 
 	try:
+		user_id = str(get_jwt()["user_id"])
 		data = request.json
+		movie_id = data["movie_id"]
+		rating = data["rating"]
+		comment = data["comment"]
 		create_time = datetime.datetime.now()
 		update_time = create_time
 
-		query = "INSERT INTO rating_list(user_id, rating, comment, created_at, updated_at) VALUES(%s,%s,%s,%s,%s)"
-		values = (user_id, data["rating"], data["comment"], create_time, update_time, )
+		query = "INSERT INTO rating_list(movie_id, user_id, rating, comment, created_at, updated_at) VALUES(%s,%s,%s,%s,%s,%s)"
+		values = (movie_id, user_id, rating, comment, create_time, update_time, )
 		mycursor = mydb.cursor()
 		mycursor.execute(query, values)
 		mydb.commit()
-		hasil = {"Status": "Review inserted successfully!"}
+		hasil = {"Status": "Review added successfully!"}
 
 	except Exception as e:
 		print("Error: " + str(e))
@@ -337,6 +387,58 @@ def insert_review():
 			"Status": "Insert failed!",
 			"Error" : str(e)
 		}
+
+	return jsonify(hasil)
+
+@app.route("/update_user_review", methods=["PUT"])
+@jwt_required()
+def update_user_review():
+	hasil = {"Status": "Update review failed!"}
+
+	try:
+		data = request.json
+		user_id = str(get_jwt()["user_id"])
+		review_id = data["review_id"]
+		rating = data["rating"]
+		comment = data["comment"]
+		update_time = datetime.datetime.now()
+
+		# Cek apakah ada yang diubah ada didalam rating
+		query = " SELECT rating, comment FROM rating_list WHERE review_id = %s AND user_id = %s"
+		values = (review_id, user_id, )
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		data_review = mycursor.fetchall()
+
+		if rating == data_review[0] and comment == data_review[1]:
+			hasil = {"Status": "There is no change in the review!"}
+			return jsonify(hasil)
+
+		# Update data review yang berubah
+		query = "UPDATE rating_list SET review_id = %s, user_id = %s "
+		values = (review_id, user_id, )
+
+		if "rating" in data:
+			query += ", rating = %s"
+			values += (rating, )
+			hasil.update({"Rating" : "Changed to {}".format(rating)})
+
+		if "comment" in data:
+			query += ", comment = %s"
+			values += (comment, )
+			hasil.update({"Comment" : "Changed to {}".format(comment)})
+
+		query += ", updated_at = %s WHERE review_id = %s AND user_id = %s"
+		values += (update_time, review_id, user_id, )
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		mydb.commit()
+		hasil.update({"Status" : "Update review sucessful!"})
+
+	except Exception as e:
+		print("Error: " + str(e))
 
 	return jsonify(hasil)
 
