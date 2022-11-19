@@ -21,13 +21,14 @@ USE `db_movie_rating`;
 DROP TABLE IF EXISTS `rating_list`;
 
 CREATE TABLE `rating_list` (
-  `movie_id` int(11) NOT NULL AUTO_INCREMENT,
+  `review_id` int(11) NOT NULL AUTO_INCREMENT,
+  `movie_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `rating` enum('1','2','3','4','5') NOT NULL,
+  `rating` tinyint(6) NOT NULL,
   `comment` text NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  PRIMARY KEY (`movie_id`)
+  PRIMARY KEY (`review_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `rating_list` */

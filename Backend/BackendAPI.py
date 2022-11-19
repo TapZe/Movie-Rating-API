@@ -442,6 +442,39 @@ def update_user_review():
 
 	return jsonify(hasil)
 
+@app.route('/delete_user_review/<review_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user_review(review_id):
+	hasil = {"Status": "Delete review failed!"}
+
+	try:
+		user_id = str(get_jwt()["user_id"])
+
+		# Cek apakah username ada didalam database
+		query = " SELECT * FROM rating_list WHERE review_id = %s"
+		values = (review_id, user_id,)
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		data_user = mycursor.fetchall()
+
+		if len(data_user) > 0:
+			hasil = {"Status": "The username that you enter already exsisted!"}
+			return jsonify(hasil)
+		
+		query = "DELETE FROM rating_list WHERE review_id = %s AND user_id = %s"
+		values = (review_id, user_id,)
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		mydb.commit()
+
+		hasil = {"Status": "Selected review has been deleted!"}
+
+	except Exception as e:
+		print("Error: " + str(e))
+
+	return jsonify(hasil)
 
 ### MAIN ###
 if __name__ == '__main__':
