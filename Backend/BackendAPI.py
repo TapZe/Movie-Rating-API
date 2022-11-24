@@ -151,7 +151,8 @@ def get_movie_average_rating(movie_id):
 			avg += result[0]
 			count += 1
 
-		avg /= count
+		if count > 0:
+			avg /= count
 		hasil = {"Average Rating": avg}
 		return make_response(jsonify(hasil),200)
 	else:
