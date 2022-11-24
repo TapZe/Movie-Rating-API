@@ -44,11 +44,11 @@
     <div class="login-content">
         <a href="#" class="close">x</a>
         <h3>Login</h3>
-        <form method="post" action="#">
+        <form method="post" action="#" id ="login">
         	<div class="row">
         		 <label for="username">
                     Username:
-                    <input type="text" name="username" id="username" placeholder="Hugh Jackman" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
+                    <input type="text" name="username" id="username" placeholder="adionsteroid" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
                 </label>
         	</div>
            
@@ -85,18 +85,24 @@
     <div class="login-content">
         <a href="#" class="close">x</a>
         <h3>sign up</h3>
-        <form method="post" action="#">
+        <form method="post" action="#" id="signup">
             <div class="row">
                  <label for="username-2">
                     Username:
-                    <input type="text" name="username" id="username-2" placeholder="Hugh Jackman" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
+                    <input type="text" name="username" id="username-2" placeholder="adionsteroid" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
                 </label>
             </div>
+			<div class="row">
+				<label for="nickname-2">
+				   Nickname:
+				   <input type="text" name="nickname" id="nickname-2" placeholder="Big Man" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
+			   </label>
+		   </div>
            
             <div class="row">
                 <label for="email-2">
                     your email:
-                    <input type="password" name="email" id="email-2" placeholder="" pattern="(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$" required="required" />
+                    <input type="text" name="email" id="email-2" placeholder="youremail@gmail.com" pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}" required="required" />
                 </label>
             </div>
              <div class="row">
@@ -118,6 +124,62 @@
     </div>
 </div>
 <!--end of signup form popup-->
+
+<script>
+	var form_login=document.getElementById('login')
+	var form_register=document.getElementById('signup')
+	
+	form_login.addEventListener('submit', function(e){
+	 e.preventDefault()
+	
+	 var username=document.getElementById('username').value
+	 var password=document.getElementById('password').value
+	
+	 fetch('http://localhost:5010/login_user', {
+	  method: 'POST',
+	  body: JSON.stringify({
+		"username" : username,
+		"password" : password,
+	
+	  }),
+	  headers: {
+		'Content-type': 'application/json; charset=UTF-8',
+	  }
+	  })
+	  .then(function(response){ 
+		data = response.json()
+		sessionStorage.setItem("token", data["access_token"])
+		location.reload()
+	  })
+	  .catch(error => console.error('Error:', error)); 
+	});
+
+	form_register.addEventListener('submit', function(e){
+	 e.preventDefault()
+	
+	 var username=document.getElementById('username-2').value
+	 var nickname=document.getElementById('nickname-2').value
+	 var password=document.getElementById('password-2').value
+	 var email=document.getElementById('email-2').value
+	
+	 fetch('http://localhost:5010/register_user', {
+	  method: 'POST',
+	  body: JSON.stringify({
+		"email" : email,
+		"nickname" : nickname,
+		"username" : username,
+		"password" : password
+	  }),
+	  headers: {
+		'Content-type': 'application/json; charset=UTF-8',
+	  }
+	  })
+	  .then(function(response){
+		location.reload()
+	  })
+	  .catch(error => console.error('Error:', error)); 
+	});
+</script>
 
 <!-- BEGIN | Header -->
 <header class="ht-header">
@@ -201,7 +263,7 @@
 							</ul>
 						</li>
 					</ul>
-					<ul class="nav navbar-nav flex-child-menu menu-right">
+					<ul class="nav navbar-nav flex-child-menu menu-right" id="navbar-right">
 						<li class="dropdown first">
 							<a class="btn btn-default dropdown-toggle lv1" data-toggle="dropdown" data-hover="dropdown">
 							pages <i class="fa fa-angle-down" aria-hidden="true"></i>
@@ -213,7 +275,7 @@
 							</ul>
 						</li>                
 						<li><a href="#">Help</a></li>
-						<li class="loginLink"><a href="#">LOG In</a></li>
+						<li class="loginLink"><a href="#">LOG IN</a></li>
 						<li class="btn signupLink"><a href="#">sign up</a></li>
 					</ul>
 				</div>
