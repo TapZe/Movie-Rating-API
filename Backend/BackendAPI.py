@@ -88,6 +88,76 @@ def get_popular_movie_list(page):
 		}
 		return make_response(jsonify(response_json), 200)
 
+@app.route('/get_movie_details/<movie_id>', methods=['GET'])
+def get_movie_details(movie_id):
+	try:
+		url = "https://api.themoviedb.org/3/movie/{}?api_key={}".format(movie_id, app_key)
+		payload= {}
+		headers = {}
+
+		response = requests.request("GET", url, headers=headers, data=payload)
+
+		if int(response.status_code) != 200:
+			raise Exception("Status Code is not 200")
+
+		movie_data = response.json()
+
+		return make_response(jsonify(movie_data), 200)
+	
+	except Exception as e:
+		response_json = {
+			"Status" : "Failed to get popular movie list",
+			"Description" : str(e)
+		}
+		return make_response(jsonify(response_json), 200)
+
+@app.route('/search_movie/<query>', methods=['GET'])
+def search_movie(query):
+	try:
+		url = "https://api.themoviedb.org/3/search/movie?api_key={}&language=en-US&query={}&page=1&include_adult=falsee".format(app_key, query)
+		payload= {}
+		headers = {}
+
+		response = requests.request("GET", url, headers=headers, data=payload)
+
+		if int(response.status_code) != 200:
+			raise Exception("Status Code is not 200")
+
+		movie_data = response.json()
+		movie_data = movie_data['results']
+
+		return make_response(jsonify(movie_data), 200)
+	
+	except Exception as e:
+		response_json = {
+			"Status" : "Failed to get popular movie list",
+			"Description" : str(e)
+		}
+		return make_response(jsonify(response_json), 200)
+
+@app.route('/get_movie_average_rating/<movie_id>', methods=['GET'])
+def get_movie_average_rating(movie_id):
+	if movie_id:
+		query = "SELECT rating FROM rating_list WHERE movie_id = %s"
+		values = (movie_id,)
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		data = mycursor.fetchall()
+
+		count = 0
+		avg = 0
+		for result in data:
+			avg += result[0]
+			count += 1
+
+		avg /= count
+		hasil = {"Average Rating": avg}
+		return make_response(jsonify(hasil),200)
+	else:
+		hasil = {"Status": "No Movie ID entered!"}
+		return jsonify(hasil)
+
 
 ### USER API ###
 @app.route('/register_user', methods=['POST'])
@@ -312,12 +382,12 @@ def update_user_data():
 
 
 ### RATING API ###
-@app.route('/get_review_list', methods=['GET'])
-def review_list():
+@app.route('/get_movie_review_list', methods=['GET'])
+def movie_review_list():
 	movie_id = request.args.get("movie_id_number")
 	
 	if movie_id:
-		query = "SELECT * FROM review_list WHERE movie_id = %s"
+		query = "SELECT * FROM rating_list WHERE movie_id = %s"
 		values = (movie_id,)
 
 		mycursor = mydb.cursor()
@@ -339,7 +409,7 @@ def user_review_list():
 
 	try:
 		user_id = str(get_jwt()["user_id"])
-		query = "SELECT * FROM review_list WHERE user_id = %s"
+		query = "SELECT * FROM rating_list WHERE user_id = %s"
 		values = (user_id,)
 
 		mycursor = mydb.cursor()
@@ -373,6 +443,18 @@ def insert_review():
 		comment = data["comment"]
 		create_time = datetime.datetime.now()
 		update_time = create_time
+
+		# Check if user already make a review
+		query = " SELECT * FROM rating_list WHERE user_id = %s AND movie_id = %s"
+		values = (user_id, movie_id, )
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		data_review = mycursor.fetchall()
+
+		if len(data_review) > 0:
+			hasil = {"Status": "The user already have a review on this movie!"}
+			return jsonify(hasil)
 
 		query = "INSERT INTO rating_list(movie_id, user_id, rating, comment, created_at, updated_at) VALUES(%s,%s,%s,%s,%s,%s)"
 		values = (movie_id, user_id, rating, comment, create_time, update_time, )
@@ -450,16 +532,16 @@ def delete_user_review(review_id):
 	try:
 		user_id = str(get_jwt()["user_id"])
 
-		# Cek apakah username ada didalam database
-		query = " SELECT * FROM rating_list WHERE review_id = %s"
-		values = (review_id, user_id,)
+		# Cek apakah review ada didalam database
+		query = " SELECT * FROM rating_list WHERE review_id = %s "
+		values = (review_id,)
 
 		mycursor = mydb.cursor()
 		mycursor.execute(query, values)
-		data_user = mycursor.fetchall()
+		data_review = mycursor.fetchall()
 
-		if len(data_user) > 0:
-			hasil = {"Status": "The username that you enter already exsisted!"}
+		if len(data_review) == 0:
+			hasil = {"Status": "The review that you want to delete is unavailable!"}
 			return jsonify(hasil)
 		
 		query = "DELETE FROM rating_list WHERE review_id = %s AND user_id = %s"
