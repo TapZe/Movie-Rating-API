@@ -231,17 +231,17 @@
                       listEl.insertAdjacentHTML(
                         "beforeend",
                         `
-						<div class="movie-item-style-2 movie-item-style-1">
-							<img src="https://www.themoviedb.org/t/p/w220_and_h330_face/${post.backdrop_path}">
-							<div class="hvr-inner">
-								<a  href="moviesingle.html"> Read more <i class="ion-android-arrow-dropright"></i> </a>
-							</div>
-							<div class="mv-item-infor">
-								<h6><a href="#">${post.original_title}</a></h6>
-								<p class="rate"><i class="ion-android-star"></i><span>${post.vote_average}</span> /10</p>
-							</div>
-						</div>
-						`
+                        <div class="movie-item-style-2 movie-item-style-1">
+                          <img src="https://www.themoviedb.org/t/p/w220_and_h330_face/${post.backdrop_path}">
+                          <div class="hvr-inner">
+                            <a  href="moviesingle.html?id=${post.id}"> Read more <i class="ion-android-arrow-dropright"></i> </a>
+                          </div>
+                          <div class="mv-item-infor">
+                            <h6><a href="#">${post.original_title}</a></h6>
+                            <p class="rate"><i class="ion-android-star"></i><span>${post.vote_average}</span> /10</p>
+                          </div>
+                        </div>
+                        `
                       );
                     });
                   });
