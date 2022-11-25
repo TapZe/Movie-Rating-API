@@ -52,7 +52,7 @@ if choice == "Home Page":
                 st.write("**Movie Rating: :star2: {}**".format(thisdata["vote_average"]))
                 st.write("**Movie Users Rating: :star2: {}**".format(average_rating["Average Rating"]))
                 st.write("Overview: {}".format(thisdata["overview"]))
-                btn1 = st.button("Review List >", key=thisdata["id"])
+                btn1 = st.button("Open Review >", key=thisdata["id"])
             if btn1:
                 st.session_state['btn_home'] = i
                 st.experimental_rerun()
@@ -146,7 +146,7 @@ if choice == "Home Page":
                 st.write("**Movie Rating: :star2: {}**".format(thisdata["vote_average"]))
                 st.write("**Movie Users Rating: :star2: {}**".format(average_rating["Average Rating"]))
                 st.write("Overview: {}".format(thisdata["overview"]))
-                btn2 = st.button("Review List >", key=thisdata["id"])
+                btn2 = st.button("Open Review >", key=thisdata["id"])
             if btn2:
                 st.session_state['btn_home'] = i+10
                 st.experimental_rerun()
@@ -262,6 +262,7 @@ if choice == "Search":
                 btn = st.button("Open Reviews >", key=data["id"])
                 if btn:
                     st.session_state['btn_search'] = count
+                    st.experimental_rerun()
                 if st.session_state['btn_search'] == count:
                     btn = True
                 else:
@@ -367,7 +368,8 @@ if choice == "Account":
                     label="Username"
                 )
                 password = st.text_input(
-                    label="Password"
+                    label="Password",
+                    type="password"
                 )
                 clicked = st.form_submit_button("Login", type="primary")
 
@@ -405,7 +407,8 @@ if choice == "Account":
                     label="Username"
                 )
                 password = st.text_input(
-                    label="Password"
+                    label="Password",
+                    type="password"
                 )
                 clicked = st.form_submit_button("Register", type="primary")
 
@@ -452,7 +455,8 @@ if choice == "Account":
         st.text_input(
             label="Password",
             disabled=True,
-            placeholder="********"
+            placeholder="********",
+            type="password"
         )
         change = st.button("Change Account Details")
         sign_out = st.button("Sign Out", type="primary")
@@ -488,7 +492,8 @@ if choice == "Account":
                     label="username"
                 )
                 password = st.text_input(
-                    label="Password"
+                    label="Password",
+                    type="password"
                 )
                 clicked = st.form_submit_button("Update Details")
                 st.info("The one that is filled is the one that will be edited.")
@@ -518,6 +523,8 @@ if choice == "Account":
         
         st.markdown("##")
         st.header("Your Reviews")
+        if st.session_state['btn_login_regis'] == 'deleted':
+            st.warning("Review has been deleted!")
         st.write('---')
         url = "http://localhost:5010/get_user_review_list_v2"
         account_reviews = requests.get(url, headers=my_header).json()
@@ -532,6 +539,30 @@ if choice == "Account":
                     st.caption("Written by You ({}) on {} and edited on {}".format(nickname, review["created_at"], review['updated_at']))
                 st.write("#")
                 st.write(review["comment"])
+                st.markdown("#")
+                delete = st.button("Delete Review", key=review['review_id'])
+
+                if delete:
+                    st.session_state['btn_login_regis'] = review['review_id']
+                    st.experimental_rerun()
+                
+                if st.session_state['btn_login_regis'] == review['review_id']:
+                    st.warning("Continue Your Delete?")
+                    col = st.columns(5)
+                    with col[0]:
+                        yes = st.button("YES", type="primary")
+                    with col[1]:
+                        no = st.button("NO", type="primary")
+                    
+                    if yes:
+                        url = "http://localhost:5010/delete_user_review/{}".format(review['review_id'])
+                        response = requests.delete(url, headers=my_header)
+                        data_json = response.json()
+                        st.session_state['btn_login_regis'] = 'deleted'
+                        st.experimental_rerun()
+                    if no:
+                        st.session_state['btn_login_regis'] = ''
+                        st.experimental_rerun()
                 st.write('---')
             has_reviewed = True
         if not has_reviewed:
