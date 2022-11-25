@@ -285,6 +285,20 @@ def login():
 
 	return jsonify(access_token=access_token)
 
+@app.route("/get_user_nickname/<user_id>", methods=["GET"])
+def get_user_nickname(user_id):
+	query = "SELECT nickname FROM user_list WHERE user_id = %s"
+	values = (user_id,)
+
+	mycursor = mydb.cursor()
+	mycursor.execute(query, values)
+	row_headers = [x[0] for x in mycursor.description]
+	data = mycursor.fetchall()
+	json_data = []
+	for result in data:
+		json_data.append(dict(zip(row_headers, result)))
+	return make_response(jsonify(json_data),200)
+
 @app.route("/user_data", methods=["GET"])
 @jwt_required()
 def user_data():
@@ -454,7 +468,7 @@ def insert_review():
 		data_review = mycursor.fetchall()
 
 		if len(data_review) > 0:
-			hasil = {"Status": "The user already have a review on this movie!"}
+			hasil = {"Status": "The user already have a review on this movie!", "Check" : 0}
 			return jsonify(hasil)
 
 		query = "INSERT INTO rating_list(movie_id, user_id, rating, comment, created_at, updated_at) VALUES(%s,%s,%s,%s,%s,%s)"
@@ -462,13 +476,14 @@ def insert_review():
 		mycursor = mydb.cursor()
 		mycursor.execute(query, values)
 		mydb.commit()
-		hasil = {"Status": "Review added successfully!"}
+		hasil = {"Status": "Review added successfully!", "Check" : 1}
 
 	except Exception as e:
 		print("Error: " + str(e))
 		hasil = {
 			"Status": "Insert failed!",
-			"Error" : str(e)
+			"Error" : str(e),
+			"Check" : 0
 		}
 
 	return jsonify(hasil)
