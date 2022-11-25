@@ -459,7 +459,7 @@ def user_review_list_id():
 		mycursor.execute(query, values)
 		row_headers = [x[0] for x in mycursor.description]
 		row_headers.append("original_title")
-		print(row_headers)
+		row_headers.append("backdrop_path")
 		data = mycursor.fetchall()
 		json_data = []
 		for result in data:
@@ -475,7 +475,8 @@ def user_review_list_id():
 
 			movie_data = response.json()
 			movie_title = movie_data["original_title"]
-			result = result + (movie_title, )
+			img = movie_data["backdrop_path"]
+			result = result + (movie_title, img)
 			json_data.append(dict(zip(row_headers, result)))
 		return make_response(jsonify(json_data), 200)
 
