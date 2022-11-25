@@ -239,7 +239,7 @@
 		<div class="row">
 			<div class="col-md-12">
 				<div class="hero-ct">
-					<h1>Edward kennedy’s profile</h1>
+					<h1>Your Rated Movies list</h1>
 					<ul class="breadcumb">
 						<li class="active"><a href="#">Home</a></li>
 						<li> <span class="ion-ios-arrow-right"></span>Rated movies</li>
@@ -274,11 +274,11 @@
 			</div>
 			<div class="col-md-9 col-sm-12 col-xs-12" id="hensin">
 				<div class="topbar-filter">
-					<p>Found <span>3 rates</span> in total</p>
+					<p>List of your <span>Movies</span></p>
 				</div>
 				<script>
 					let auth = `JWT ${localStorage.getItem("token")}`
-					const url = "http://localhost:5010/get_user_review_list";
+					const url = "http://localhost:5010/get_user_review_list_v2";
 					const listEl = document.getElementById("hensin");
 					fetch(url, {
 						method: 'GET',
@@ -295,9 +295,9 @@
 							"beforeend",
 							`
 							<div class="movie-item-style-2 userrate">
-								<img src="images/uploads/mv1.jpg" alt="">
+								<img src="https://www.themoviedb.org/t/p/w220_and_h330_face/${post.backdrop_path}" alt="">
 								<div class="mv-item-infor">
-									<h6><a href="#">${post.movie_id}</a></h6>
+									<h6><a href="#">${post.original_title}</a></h6>
 									<p class="time sm-text">your rate:</p>
 									<p class="rate"><i class="ion-android-star"></i><span>${post.rating}</span> /10</p>
 									<p class="time sm-text">your reviews:</p>

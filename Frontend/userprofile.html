@@ -367,7 +367,7 @@
 	.then((response) => response.json())
 	.then((data) => {
 		console.log(data);
-		document.getElementById("NamaOrang").innerText = data[0].nickname;
+		document.getElementById("NamaOrang").innerText = `${data[0].nickname}'s User Profile`;
 		document.getElementById("IdOrang").value = data[0].user_id;
 		document.getElementById("UsernameOrang").value = data[0].username;
 		document.getElementById("EmailOrang").value = data[0].email;
