@@ -22,15 +22,6 @@ if 'btn_login_regis' not in st.session_state:
     st.session_state['btn_login_regis'] = ''
 my_header = st.session_state['header']
 
-st.write(my_header)
-st.write(st.session_state['user_token'])
-st.write("{}".format(st.session_state['btn_home']))
-st.write("{}".format(st.session_state['btn_search']))
-st.write("{}".format(st.session_state['btn_change_details']))
-st.write("{}".format(st.session_state['btn_change_success']))
-st.write("{}".format(st.session_state['btn_change_msg']))
-st.write("{}".format(st.session_state['btn_login_regis']))
-
 # HEADER
 st.title("Movie Rating API")
 choice = option_menu("Navigation", ["Home Page", "Search", "Account"], icons=["house", "search", "person-circle"],menu_icon="cast", orientation="horizontal")
@@ -284,10 +275,12 @@ if choice == "Search":
                                 nickname = requests.get("http://localhost:5010/get_user_nickname/{}".format(review["user_id"])).json()[0]["nickname"]
                                 with st.container():
                                     st.markdown("---")
-                                    st.write("**A review by {}**".format(nickname))
-                                    st.caption("Written by {} on {}".format(nickname, review["created_at"]))
+                                    st.write("**A review by {} with :star2: {}**".format(nickname, review['rating']))
+                                    if review['created_at'] == review['updated_at']:
+                                        st.caption("Written by {} on {}".format(nickname, review["created_at"]))
+                                    else:
+                                        st.caption("Written by {} on {} and edited on {}".format(nickname, review["created_at"], review['updated_at']))
                                     st.write("#")
-                                    st.write("**Review Movie Rating: :star2: {}**".format(review["rating"]))
                                     st.write(review["comment"])
                                     st.markdown("---")
                                 is_reviewed = True
@@ -304,11 +297,30 @@ if choice == "Search":
                                     if review["movie_id"] == movie_id:
                                         nickname = requests.get("http://localhost:5010/get_user_nickname/{}".format(review["user_id"])).json()[0]["nickname"]
                                         with st.container():
-                                            st.write("**A review by You ({})**".format(nickname))
-                                            st.caption("Written by You ({}) on {}".format(nickname, review["created_at"]))
+                                            st.write("**A review by You ({}) with :star2: {}**".format(nickname, review['rating']))
+                                            if review['created_at'] == review['updated_at']:
+                                                st.caption("Written by You ({}) on {}".format(nickname, review["created_at"]))
+                                            else:
+                                                st.caption("Written by You ({}) on {} and edited on {}".format(nickname, review["created_at"], review['updated_at']))
                                             st.write("#")
-                                            st.write("**Review Movie Rating: :star2: {}**".format(review["rating"]))
                                             st.write(review["comment"])
+                                            st.markdown("---")
+                                        with st.form("update_review_form"):
+                                            st.subheader("Edit Your Review")
+                                            rating_val = st.number_input("Edit your rating", step=1, min_value=0, max_value=10,value=review['rating'])
+                                            comment = st.text_area("Edit your comment about the movie", placeholder=review['comment'])
+                                            submitted = st.form_submit_button("Edit Your Review")
+                                            st.info("You don't need to fill anything or just ignore this if you don't want to edit.")
+                                            if submitted:
+                                                url = "http://localhost:5010/update_user_review"
+                                                payload = json.dumps({
+                                                    "review_id": review['review_id'],
+                                                    "rating": rating_val,
+                                                    "comment": comment
+                                                })
+                                                response = requests.put(url, headers=my_header, data=payload).json()
+                                                st.success("Your review has been edited!")
+                                                st.experimental_rerun()
                                         is_reviewed = True
                                 if not is_reviewed:
                                     st.info("You never reviewed this movie!")
@@ -329,6 +341,7 @@ if choice == "Search":
                                             st.experimental_rerun()
             count += 1
 
+# ACCOUNT PAGE
 if choice == "Account":
     st.session_state['btn_home'] = ''
     st.session_state['btn_search'] = ''
@@ -336,7 +349,7 @@ if choice == "Account":
     st.header("Account Details")
     response = requests.get("http://localhost:5010/user_data", headers=my_header)
     if response.status_code != 200:
-        st.info("You are logged out!")
+        st.info("You are currently logged out!")
         login = st.button("Login")
         st.write("or")
         register = st.button("Register")
@@ -513,7 +526,10 @@ if choice == "Account":
             nickname = requests.get("http://localhost:5010/get_user_nickname/{}".format(review["user_id"])).json()[0]["nickname"]
             with st.container():
                 st.write("**A review by You ({}) for movie \"{}\"**".format(nickname, review["original_title"]))
-                st.caption("Written by You ({}) on {}".format(nickname, review["created_at"]))
+                if review['created_at'] == review['updated_at']:
+                    st.caption("Written by You ({}) on {}".format(nickname, review["created_at"]))
+                else:
+                    st.caption("Written by You ({}) on {} and edited on {}".format(nickname, review["created_at"], review['updated_at']))
                 st.write("#")
                 st.write(review["comment"])
                 st.write('---')
