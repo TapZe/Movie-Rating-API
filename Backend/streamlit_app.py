@@ -315,7 +315,7 @@ if choice == "Account":
                 password = st.text_input(
                     label="Password"
                 )
-                clicked = st.form_submit_button("Login")
+                clicked = st.form_submit_button("Login", type="primary")
 
                 if clicked:
                     url = "http://localhost:5010/login_user"
@@ -329,20 +329,54 @@ if choice == "Account":
                     data_json = response.json()
 
                     if response.status_code == 200:
-                        st.write()
                         st.session_state['user_token'] = data_json['access_token']
                         st.session_state['header'] = {'Content-Type': 'application/json', "Authorization": "JWT {}".format(data_json['access_token'])}
                     else:
-                        st.session_state['btn_change_success'] = False
-                        st.session_state['btn_change_msg'] = data_json['Status']
+                        st.error(data_json['Status'])
                     
                     st.session_state['btn_login_regis'] = ''
                     st.experimental_rerun()
         
         # REGISTER FORM
         if st.session_state['btn_login_regis'] == 'Register':
-            st.write()
+            st.markdown("---")
+            with st.form("Register Form"):
+                email = st.text_input(
+                    label="Email"
+                )
+                nickname = st.text_input(
+                    label="Nickname"
+                )
+                username = st.text_input(
+                    label="Username"
+                )
+                password = st.text_input(
+                    label="Password"
+                )
+                clicked = st.form_submit_button("Register", type="primary")
 
+                if clicked:
+                    url = "http://localhost:5010/register_user"
+                    data_json = {}
+                    if email != "":
+                        data_json.update({"email": email})
+                    if nickname != "":
+                        data_json.update({"nickname": nickname})
+                    if username != "":
+                        data_json.update({"username": username})
+                    if password != "":
+                        data_json.update({"password": password})
+                    payload = json.dumps(data_json)
+                    response = requests.post(url, headers=my_header, data=payload)
+                    data_json = response.json()
+
+                    if response.status_code == 200:
+                        st.success(data_json['Status'])
+                    else:
+                        st.error(data_json['Status'])
+                    
+                    st.session_state['btn_login_regis'] = ''
+                    st.experimental_rerun()
     else:
         response = response.json()[0]
         st.write("##")
@@ -371,6 +405,7 @@ if choice == "Account":
 
         if sign_out:
             st.session_state["user_token"] = ''
+            st.session_state['header'] = {'Content-Type': 'application/json'}
             st.experimental_rerun()
 
         placeholder = st.empty()
@@ -425,3 +460,23 @@ if choice == "Account":
                     
                     st.session_state['btn_change_details'] = False
                     st.experimental_rerun()
+            st.markdown("---")
+        
+        st.markdown("##")
+        st.header("Your Reviews")
+        st.write('---')
+        url = "http://localhost:5010/get_user_review_list"
+        account_reviews = requests.get(url, headers=my_header).json()
+        has_reviewed = False
+        for review in account_reviews:
+            nickname = requests.get("http://localhost:5010/get_user_nickname/{}".format(review["user_id"])).json()[0]["nickname"]
+            with st.container():
+                st.write("**A review by You ({})**".format(nickname))
+                st.caption("Written by You ({}) on {}".format(nickname, review["created_at"]))
+                st.write("#")
+                st.write(review["comment"])
+                st.write('---')
+            has_reviewed = True
+        if not has_reviewed:
+            st.info("You never reviewed any movie!")
+        

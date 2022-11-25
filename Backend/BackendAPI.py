@@ -445,6 +445,49 @@ def user_review_list():
 
 	return jsonify(hasil)
 
+@app.route('/get_user_review_list_v2', methods=['GET'])
+@jwt_required()
+def user_review_list_id():
+	hasil = {"Status": "Fetching data failed!"}
+
+	try:
+		user_id = str(get_jwt()["user_id"])
+		query = "SELECT * FROM rating_list WHERE user_id = %s"
+		values = (user_id,)
+
+		mycursor = mydb.cursor()
+		mycursor.execute(query, values)
+		row_headers = [x[0] for x in mycursor.description]
+		row_headers.append("original_title")
+		print(row_headers)
+		data = mycursor.fetchall()
+		json_data = []
+		for result in data:
+			movie_id = result[1]
+			url = "https://api.themoviedb.org/3/movie/{}?api_key={}".format(movie_id, app_key)
+			payload= {}
+			headers = {}
+
+			response = requests.request("GET", url, headers=headers, data=payload)
+
+			if int(response.status_code) != 200:
+				raise Exception("Status Code is not 200")
+
+			movie_data = response.json()
+			movie_title = movie_data["original_title"]
+			result = result + (movie_title, )
+			json_data.append(dict(zip(row_headers, result)))
+		return make_response(jsonify(json_data), 200)
+
+	except Exception as e:
+		print("Error: " + str(e))
+		hasil = {
+			"Status": "Fetching data failed!",
+			"Error" : str(e)
+		}
+
+	return jsonify(hasil)
+
 @app.route('/insert_review', methods=['POST'])
 @jwt_required()
 def insert_review():
