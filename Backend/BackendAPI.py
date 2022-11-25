@@ -468,7 +468,39 @@ def insert_review():
 		data_review = mycursor.fetchall()
 
 		if len(data_review) > 0:
-			hasil = {"Status": "The user already have a review on this movie!", "Check" : 0}
+			# Cek apakah ada yang diubah ada didalam rating
+			check_query = " SELECT rating, comment FROM rating_list WHERE movie_id = %s AND user_id = %s"
+			check_values = (movie_id, user_id, )
+
+			mycursor = mydb.cursor()
+			mycursor.execute(check_query, check_values)
+			data_review = mycursor.fetchall()
+
+			if rating == data_review[0] and comment == data_review[1]:
+				hasil = {"Status": "There is no change in the review!"}
+				return jsonify(hasil)
+
+			# Update data review yang berubah
+			query = "UPDATE rating_list SET user_id = %s "
+			values = (user_id, )
+
+			if "rating" in data:
+				query += ", rating = %s"
+				values += (rating, )
+				hasil.update({"Rating" : "Changed to {}".format(rating)})
+
+			if "comment" in data:
+				query += ", comment = %s"
+				values += (comment, )
+				hasil.update({"Comment" : "Changed to {}".format(comment)})
+
+			query += ", updated_at = %s WHERE movie_id = %s AND user_id = %s"
+			values += (update_time, movie_id, user_id, )
+
+			mycursor = mydb.cursor()
+			mycursor.execute(query, values)
+			mydb.commit()
+			hasil = {"Status": "Review added successfully!", "Check" : 1}
 			return jsonify(hasil)
 
 		query = "INSERT INTO rating_list(movie_id, user_id, rating, comment, created_at, updated_at) VALUES(%s,%s,%s,%s,%s,%s)"
