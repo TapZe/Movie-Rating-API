@@ -259,15 +259,8 @@
 			<div class="col-md-4 col-sm-12 col-xs-12">
 				<div class="movie-img sticky-sb">
 					<img src="images/uploads/movie-single.jpg" alt="" id="myImg">
-					<div class="movie-btn">	
-						<div class="btn-transform transform-vertical red">
-							<div><a href="#" class="item item-1 redbtn"> <i class="ion-play"></i> Watch Trailer</a></div>
-							<div><a href="https://www.youtube.com/embed/o-0hcF97wy0" class="item item-2 redbtn fancybox-media hvr-grow"><i class="ion-play"></i></a></div>
-						</div>
-						<div class="btn-transform transform-vertical">
-							<div><a href="#" class="item item-1 yellowbtn"> <i class="ion-card"></i> Buy ticket</a></div>
-							<div><a href="#" class="item item-2 yellowbtn"><i class="ion-card"></i></a></div>
-						</div>
+					<div class="movie-btn">
+						
 					</div>
 				</div>
 			</div>
@@ -294,6 +287,71 @@
 						            <div class="row">
 						            	<div class="col-md-8 col-sm-12 col-xs-12">
 						            		<p id="overpiw">Tony Stark creates the Ultron Program to protect the world, but when the peacekeeping program becomes hostile, The Avengers go into action to try and defeat a virtually impossible enemy together. Earth's mightiest heroes must come together once again to protect the world from global extinction.</p>
+						            	</div>
+						            </div>
+						        </div>
+						    </div>
+						</div>
+					</div>
+					<div class="movie-tabs">
+						<div class="tabs">
+							<ul class="tab-links tabs-mv">
+								<li class="active"><a href="#overview">Rate Now</a></li>                   
+							</ul>
+						    <div class="tab-content">
+						        <div id="overview" class="tab active">
+						            <div class="row">
+						            	<div class="col-md-8 col-sm-12 col-xs-12">
+						            		<form action="#" id="rateOrang">
+												<h3>Star</h3>
+												<select id="nilaiRateOrang">
+													<option value="1">1</option>
+													<option value="2">2</option>
+													<option value="3">3</option>
+													<option value="4">4</option>
+													<option value="5">5</option>
+													<option value="6">6</option>
+													<option value="7">7</option>
+													<option value="8">8</option>
+													<option value="9">9</option>
+													<option value="10">10</option>
+												</select>
+												<br>
+												<br>
+												<h3>Comment</h3>
+												<br>
+												<input type="text" id="CommentOrang" name="CommentOrang" value="CommentOrang"><br><br>
+												<input type="submit" value="Submit">
+											  </form>
+											  <script>
+												var form_register=document.getElementById('rateOrang')
+
+												form_register.addEventListener('submit', function(e){
+												e.preventDefault()
+												
+												var ratingJSON =document.getElementById('nilaiRateOrang').value
+												var commentJSON =document.getElementById('CommentOrang').value
+												var email =document.getElementById('email-2').value
+												let auth = `JWT ${localStorage.getItem("token")}`
+
+												fetch('http://localhost:5010/insert_review', {
+												method: 'POST',
+												body: JSON.stringify({
+													"movie_id"  : idid,
+													"rating"    : ratingJSON,
+													"comment"   : commentJSON
+												}),
+												headers: {
+													'Content-type': 'application/json; charset=UTF-8',
+													'Authorization' : auth,
+												}
+												})
+												.then(function(response){
+													location.reload()
+												})
+												.catch(error => console.error('Error:', error)); 
+												});
+											  </script>
 						            	</div>
 						            </div>
 						        </div>

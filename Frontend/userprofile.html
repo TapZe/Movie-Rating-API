@@ -44,11 +44,11 @@
     <div class="login-content">
         <a href="#" class="close">x</a>
         <h3>Login</h3>
-        <form method="post" action="#">
+        <form method="post" action="#" id ="login">
         	<div class="row">
         		 <label for="username">
                     Username:
-                    <input type="text" name="username" id="username" placeholder="Hugh Jackman" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
+                    <input type="text" name="username" id="username" placeholder="adionsteroid" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
                 </label>
         	</div>
            
@@ -85,18 +85,24 @@
     <div class="login-content">
         <a href="#" class="close">x</a>
         <h3>sign up</h3>
-        <form method="post" action="#">
+        <form method="post" action="#" id="signup">
             <div class="row">
                  <label for="username-2">
                     Username:
-                    <input type="text" name="username" id="username-2" placeholder="Hugh Jackman" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
+                    <input type="text" name="username" id="username-2" placeholder="adionsteroid" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
                 </label>
             </div>
+			<div class="row">
+				<label for="nickname-2">
+				   Nickname:
+				   <input type="text" name="nickname" id="nickname-2" placeholder="Big Man" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{8,20}$" required="required" />
+			   </label>
+		   </div>
            
             <div class="row">
                 <label for="email-2">
                     your email:
-                    <input type="password" name="email" id="email-2" placeholder="" pattern="(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$" required="required" />
+                    <input type="text" name="email" id="email-2" placeholder="youremail@gmail.com" pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}" required="required" />
                 </label>
             </div>
              <div class="row">
@@ -119,6 +125,61 @@
 </div>
 <!--end of signup form popup-->
 
+<script>
+	var form_login=document.getElementById('login')
+	var form_register=document.getElementById('signup')
+	
+	form_login.addEventListener('submit', function(e){
+	 e.preventDefault()
+	
+	 var username=document.getElementById('username').value
+	 var password=document.getElementById('password').value
+	
+	 fetch('http://localhost:5010/login_user', {
+	  method: 'POST',
+	  body: JSON.stringify({
+		"username" : username,
+		"password" : password,
+	
+		}),
+		headers: {
+			'Content-type': 'application/json; charset=UTF-8',
+		}
+		})
+	  	.then((response) => response.json())
+    	.then((data) => {
+            localStorage.setItem("token", data.access_token);
+			location.reload();
+          })
+	  .catch(error => console.error('Error:', error)); 
+	});
+
+	form_register.addEventListener('submit', function(e){
+	 e.preventDefault()
+	
+	 var username=document.getElementById('username-2').value
+	 var nickname=document.getElementById('nickname-2').value
+	 var password=document.getElementById('password-2').value
+	 var email=document.getElementById('email-2').value
+	
+	 fetch('http://localhost:5010/register_user', {
+	  method: 'POST',
+	  body: JSON.stringify({
+		"email" : email,
+		"nickname" : nickname,
+		"username" : username,
+		"password" : password
+	  }),
+	  headers: {
+		'Content-type': 'application/json; charset=UTF-8',
+	  }
+	  })
+	  .then(function(response){
+		location.reload()
+	  })
+	  .catch(error => console.error('Error:', error)); 
+	});
+</script>
 <!-- BEGIN | Header -->
 <header class="ht-header">
 	<div class="container">
@@ -221,13 +282,6 @@
 	    </nav>
 	    
 	    <!-- top search form -->
-	    <div class="top-search">
-	    	<select>
-				<option value="united">TV show</option>
-				<option value="saab">Others</option>
-			</select>
-			<input type="text" placeholder="Search for a movie, TV Show or celebrity that you are looking for">
-	    </div>
 	</div>
 </header>
 <!-- END | Header -->
@@ -237,7 +291,7 @@
 		<div class="row">
 			<div class="col-md-12">
 				<div class="hero-ct">
-					<h1>Edward kennedy’s profile</h1>
+					<h1 id="NamaOrang">Edward kennedy’s profile</h1>
 					<ul class="breadcumb">
 						<li class="active"><a href="#">Home</a></li>
 						<li> <span class="ion-ios-arrow-right"></span>Profile</li>
@@ -280,68 +334,26 @@
 						<div class="row">
 							<div class="col-md-6 form-it">
 								<label>Username</label>
-								<input type="text" placeholder="edwardkennedy">
+								<input id="UsernameOrang" type="text" value="edwardkennedy">
 							</div>
 							<div class="col-md-6 form-it">
 								<label>Email Address</label>
-								<input type="text" placeholder="edward@kennedy.com">
+								<input id="EmailOrang" type="text" value="edward@kennedy.com">
 							</div>
 						</div>
 						<div class="row">
 							<div class="col-md-6 form-it">
-								<label>First Name</label>
-								<input type="text" placeholder="Edward ">
+								<label>User ID</label>
+								<input id="IdOrang" type="text" value="Edward ">
 							</div>
 							<div class="col-md-6 form-it">
-								<label>Last Name</label>
-								<input type="text" placeholder="Kennedy">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-md-6 form-it">
-								<label>Country</label>
-								<select>
-								  <option value="united">United States</option>
-								  <option value="saab">Others</option>
-								</select>
-							</div>
-							<div class="col-md-6 form-it">
-								<label>State</label>
-								<select>
-								  <option value="united">New York</option>
-								  <option value="saab">Others</option>
-								</select>
+								<label>Nickname</label>
+								<input id="NicknameOrang" type="text" value="Kennedy">
 							</div>
 						</div>
 						<div class="row">
 							<div class="col-md-2">
 								<input class="submit" type="submit" value="save">
-							</div>
-						</div>	
-					</form>
-					<form action="#" class="password">
-						<h4>02. Change password</h4>
-						<div class="row">
-							<div class="col-md-6 form-it">
-								<label>Old Password</label>
-								<input type="text" placeholder="**********">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-md-6 form-it">
-								<label>New Password</label>
-								<input type="text" placeholder="***************">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-md-6 form-it">
-								<label>Confirm New Password</label>
-								<input type="text" placeholder="*************** ">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-md-2">
-								<input class="submit" type="submit" value="change">
 							</div>
 						</div>	
 					</form>
@@ -407,6 +419,25 @@
 		</div>
 	</div>
 </footer>
+<script>
+	let auth = `JWT ${localStorage.getItem("token")}`
+	fetch('http://localhost:5010/user_data', {
+	  method: 'GET',
+	headers: {
+		'Authorization' : auth,
+	}
+	})
+	.then((response) => response.json())
+	.then((data) => {
+		console.log(data);
+		document.getElementById("NamaOrang").innerText = data[0].nickname;
+		document.getElementById("IdOrang").value = data[0].user_id;
+		document.getElementById("UsernameOrang").value = data[0].username;
+		document.getElementById("EmailOrang").value = data[0].email;
+		document.getElementById("NicknameOrang").value = data[0].nickname;
+	})
+	.catch(error => console.error('Error:', error));
+</script>
 <!-- end of footer section-->
 
 <script src="js/jquery.js"></script>

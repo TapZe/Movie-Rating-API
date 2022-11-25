@@ -149,6 +149,8 @@
 	  .then(function(response){ 
 		data = response.json()
 		sessionStorage.setItem("token", data["access_token"])
+		localStorage.setItem("token", data["access_token"])
+		console.log(data.access_token);
 		location.reload()
 	  })
 	  .catch(error => console.error('Error:', error)); 
