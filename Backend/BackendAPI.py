@@ -332,7 +332,7 @@ def update_user_data():
 			password = data["password"]
 			
 			if len(password) < 8:
-				hasil = {"Status": "Your password needs to be atleast 8 character!"}
+				hasil = {"Status": "Your password needs to be atleast 8 character!", "Check": 0}
 				return jsonify(hasil)	
 			
 			password_enc = hashlib.md5(password.encode('utf-8')).hexdigest()
@@ -344,15 +344,15 @@ def update_user_data():
 			nickname = data["nickname"]
 
 			# Cek apakah nickname ada didalam database
-			query = " SELECT DISTINCT nickname FROM user_list WHERE UPPER(nickname) LIKE UPPER(%s)"
-			values = (nickname, )
+			check_query = " SELECT DISTINCT nickname FROM user_list WHERE UPPER(nickname) LIKE UPPER(%s)"
+			check_values = (nickname, )
 
 			mycursor = mydb.cursor()
-			mycursor.execute(query, values)
+			mycursor.execute(check_query, check_values)
 			data_user = mycursor.fetchall()
 
 			if len(data_user) > 0:
-				hasil = {"Status": "The nickname that you enter already exsisted!"}
+				hasil = {"Status": "The nickname that you enter already exsisted!", "Check": 0}
 				return jsonify(hasil)
 
 			query += ", nickname = %s"
@@ -363,19 +363,19 @@ def update_user_data():
 			username = data["username"].lower()
 			
 			if len(username) < 8:
-				hasil = {"Status": "Your username needs to be atleast 8 character!"}
+				hasil = {"Status": "Your username needs to be atleast 8 character!", "Check": 0}
 				return jsonify(hasil)
 
 			# Cek apakah username ada didalam database
-			query = " SELECT username FROM user_list WHERE username = %s "
-			values = (username, )
+			check_query = " SELECT username FROM user_list WHERE username = %s "
+			check_values = (username, )
 
 			mycursor = mydb.cursor()
-			mycursor.execute(query, values)
+			mycursor.execute(check_query, check_values)
 			data_user = mycursor.fetchall()
 
 			if len(data_user) > 0:
-				hasil = {"Status": "The username that you enter already exsisted!"}
+				hasil = {"Status": "The username that you enter already exsisted!", "Check": 0}
 				return jsonify(hasil)
 
 			query += ", username = %s"
@@ -502,11 +502,11 @@ def update_user_review():
 		update_time = datetime.datetime.now()
 
 		# Cek apakah ada yang diubah ada didalam rating
-		query = " SELECT rating, comment FROM rating_list WHERE review_id = %s AND user_id = %s"
-		values = (review_id, user_id, )
+		check_query = " SELECT rating, comment FROM rating_list WHERE review_id = %s AND user_id = %s"
+		check_values = (review_id, user_id, )
 
 		mycursor = mydb.cursor()
-		mycursor.execute(query, values)
+		mycursor.execute(check_query, check_values)
 		data_review = mycursor.fetchall()
 
 		if rating == data_review[0] and comment == data_review[1]:
