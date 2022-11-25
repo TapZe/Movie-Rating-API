@@ -70,10 +70,12 @@
                   <input type="password" name="password" id="password" placeholder="******" pattern="(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$" required="required" />
               </label>
           </div>
+          
          <div class="row">
             <button type="submit">Login</button>
          </div>
       </form>
+      
   </div>
 </div>
 <!--end of login form popup-->
@@ -242,7 +244,7 @@ form_register.addEventListener('submit', function(e){
         <div class="row">
           <div class="col-md-12">
             <div class="hero-ct">
-              <h1>Popular</h1>
+              <h1>Trending Movie</h1>
               <ul class="breadcumb">
                 <li class="active"><a href="#">Home</a></li>
                 <li><span class="ion-ios-arrow-right"></span> movie listing</li>
@@ -261,7 +263,7 @@ form_register.addEventListener('submit', function(e){
             </div>
             <div class="flex-wrap-movielist mv-grid-fw" id="hensin">
               <script>
-                const url = "http://localhost:5010/get_popular_movie_list/1";
+                const url = "http://localhost:5010/get_trend_movie_list/day";
                 const listEl = document.getElementById("hensin");
                 fetch(url)
                   .then((response) => response.json())
@@ -299,7 +301,6 @@ form_register.addEventListener('submit', function(e){
                 <a href="#">79</a>
                 <a href="#"><i class="ion-arrow-right-b"></i></a>
               </div>
-            </div>
           </div>
         </div>
       </div>
